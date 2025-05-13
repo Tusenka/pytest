@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import warnings
 from pathlib import Path
 import sys
 from typing import Iterable
@@ -13,6 +14,7 @@ from _pytest.outcomes import fail
 from _pytest.pathlib import absolutepath
 from _pytest.pathlib import commonpath
 from _pytest.pathlib import safe_exists
+from ..warning_types import PytestWarning
 
 
 def _parse_ini_config(path: Path) -> iniconfig.IniConfig:
@@ -95,6 +97,7 @@ def locate_config(
         "tox.ini",
         "setup.cfg",
     ]
+    toml_config_name="pyproject.toml"
     args = [x for x in args if not str(x).startswith("-")]
     if not args:
         args = [invocation_dir]
@@ -109,6 +112,10 @@ def locate_config(
                         found_pyproject_toml = p
                     ini_config = load_config_dict_from_file(p)
                     if ini_config is not None:
+                        if found_pyproject_toml is None and load_config_dict_from_file(base/toml_config_name):
+                            warnings.warn(
+                                "ignoring pytest config in pyproject.toml!",
+                                PytestWarning)
                         return base, p, ini_config
     if found_pyproject_toml is not None:
         return found_pyproject_toml.parent, found_pyproject_toml, {}
@@ -195,7 +202,7 @@ def determine_setup(
             rootdir = inipath_.parent
     else:
         ancestor = get_common_ancestor(invocation_dir, dirs)
-        rootdir, inipath, inicfg = locate_config(invocation_dir, [ancestor])
+        rootdir, inipath, inicfg, skipped_configs = locate_config(invocation_dir, [ancestor])
         if rootdir is None and rootdir_cmd_arg is None:
             for possible_rootdir in (ancestor, *ancestor.parents):
                 if (possible_rootdir / "setup.py").is_file():

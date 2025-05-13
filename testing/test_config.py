@@ -168,7 +168,10 @@ class TestParseIni:
         pytester.makepyprojecttoml("[tool.pytest.ini_options]")
         pytest_ini = pytester.makefile(".ini", pytest="")
         config = pytester.parseconfig()
+
+        result = pytester.runpytest()
         assert config.inipath == pytest_ini
+        result.stdout.fnmatch_lines("ignoring pytest config in pyproject.toml!")
 
     def test_toxini_before_lower_pytestini(self, pytester: Pytester) -> None:
         sub = pytester.mkdir("sub")
@@ -307,6 +310,7 @@ class TestParseIni:
             ),
         ],
     )
+
     @pytest.mark.filterwarnings("default")
     def test_invalid_config_options(
         self,
