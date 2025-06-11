@@ -1,11 +1,12 @@
 from _pytest.fixtures import fixture
 
-pytest_plugins = ["pytester", "plugin"]
+pytest_plugins = ["pytester", "some_plugin"]
+
+
 @fixture
 def b():
-    return 2
-
+    return 1
 
 @fixture
 def a():
-    return 1
+    return 2

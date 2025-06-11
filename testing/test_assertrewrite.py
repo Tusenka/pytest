@@ -6,6 +6,7 @@ from collections.abc import Generator
 from collections.abc import Mapping
 import dis
 import errno
+from copy import deepcopy
 from functools import partial
 import glob
 import importlib
@@ -44,6 +45,7 @@ import pytest
 
 def rewrite(src: str) -> ast.Module:
     tree = ast.parse(src)
+    tree0=deepcopy(tree)
     rewrite_asserts(tree, src.encode())
     return tree
 
